@@ -1,0 +1,15 @@
+meta {
+  name: Delete Question
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{base_url}}/admin/questions/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}

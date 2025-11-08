@@ -1,4 +1,4 @@
-const { db } = require('./init');
+const { sql } = require('./init');
 
 // Questions from requirements file - shuffled to avoid grouping by category
 const questions = [
@@ -56,38 +56,30 @@ const shuffledQuestions = shuffleArray(questions).map((q, index) => ({
   question_order: index + 1
 }));
 
-const seedQuestions = () => {
-  return new Promise((resolve, reject) => {
+const seedQuestions = async () => {
+  try {
     // Check if questions already exist
-    db.get('SELECT COUNT(*) as count FROM questions', (err, row) => {
-      if (err) {
-        reject(err);
-        return;
-      }
+    const result = await sql`SELECT COUNT(*) as count FROM questions`;
+    const count = parseInt(result[0].count);
 
-      if (row.count > 0) {
-        console.log('Questions already seeded');
-        resolve();
-        return;
-      }
+    if (count > 0) {
+      console.log('Questions already seeded');
+      return;
+    }
 
-      // Insert questions
-      const stmt = db.prepare('INSERT INTO questions (gift_category, question_text, question_order) VALUES (?, ?, ?)');
-      
-      shuffledQuestions.forEach((q) => {
-        stmt.run(q.gift_category, q.question_text, q.question_order);
-      });
+    // Insert questions
+    for (const q of shuffledQuestions) {
+      await sql`
+        INSERT INTO questions (gift_category, question_text, question_order)
+        VALUES (${q.gift_category}, ${q.question_text}, ${q.question_order})
+      `;
+    }
 
-      stmt.finalize((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          console.log('Questions seeded successfully');
-          resolve();
-        }
-      });
-    });
-  });
+    console.log('✅ Questions seeded successfully');
+  } catch (err) {
+    console.error('Error seeding questions:', err);
+    throw err;
+  }
 };
 
 const giftDescriptions = [
@@ -117,78 +109,60 @@ const giftDescriptions = [
   }
 ];
 
-const seedGiftDescriptions = () => {
-  return new Promise((resolve, reject) => {
+const seedGiftDescriptions = async () => {
+  try {
     // Check if descriptions already exist
-    db.get('SELECT COUNT(*) as count FROM gift_descriptions', (err, row) => {
-      if (err) {
-        reject(err);
-        return;
-      }
+    const result = await sql`SELECT COUNT(*) as count FROM gift_descriptions`;
+    const count = parseInt(result[0].count);
 
-      if (row.count > 0) {
-        console.log('Gift descriptions already seeded');
-        resolve();
-        return;
-      }
+    if (count > 0) {
+      console.log('Gift descriptions already seeded');
+      return;
+    }
 
-      // Insert descriptions
-      const stmt = db.prepare('INSERT INTO gift_descriptions (gift_category, description) VALUES (?, ?)');
-      
-      giftDescriptions.forEach((gift) => {
-        stmt.run(gift.gift_category, gift.description);
-      });
+    // Insert descriptions
+    for (const gift of giftDescriptions) {
+      await sql`
+        INSERT INTO gift_descriptions (gift_category, description)
+        VALUES (${gift.gift_category}, ${gift.description})
+      `;
+    }
 
-      stmt.finalize((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          console.log('Gift descriptions seeded successfully');
-          resolve();
-        }
-      });
-    });
-  });
+    console.log('✅ Gift descriptions seeded successfully');
+  } catch (err) {
+    console.error('Error seeding gift descriptions:', err);
+    throw err;
+  }
 };
 
-const seedDefaultAdmin = () => {
-  return new Promise((resolve, reject) => {
+const seedDefaultAdmin = async () => {
+  try {
     // Check if any admin user exists
-    db.get('SELECT * FROM users WHERE role = ?', ['admin'], (err, row) => {
-      if (err) {
-        reject(err);
-        return;
-      }
+    const result = await sql`SELECT * FROM users WHERE role = ${'admin'}`;
 
-      if (row) {
-        console.log('Admin user already exists');
-        resolve();
-        return;
-      }
+    if (result.length > 0) {
+      console.log('Admin user already exists');
+      return;
+    }
 
-      // Create default admin user
-      const defaultAdmin = {
-        fullname: 'Admin User',
-        email: 'admin@spiritualgifts.com',
-        role: 'admin'
-      };
+    // Create default admin user
+    const defaultAdmin = {
+      fullname: 'Admin User',
+      email: 'admin@spiritualgifts.com',
+      role: 'admin'
+    };
 
-      db.run(
-        'INSERT INTO users (fullname, email, role) VALUES (?, ?, ?)',
-        [defaultAdmin.fullname, defaultAdmin.email, defaultAdmin.role],
-        function (err) {
-          if (err) {
-            reject(err);
-          } else {
-            console.log(`Default admin user created: ${defaultAdmin.email}`);
-            console.log('You can now login with this email to get admin access');
-            resolve();
-          }
-        }
-      );
-    });
-  });
+    await sql`
+      INSERT INTO users (fullname, email, role)
+      VALUES (${defaultAdmin.fullname}, ${defaultAdmin.email}, ${defaultAdmin.role})
+    `;
+
+    console.log(`✅ Default admin user created: ${defaultAdmin.email}`);
+    console.log('You can now login with this email to get admin access');
+  } catch (err) {
+    console.error('Error seeding default admin:', err);
+    throw err;
+  }
 };
 
 module.exports = { seedQuestions, seedGiftDescriptions, seedDefaultAdmin };
-

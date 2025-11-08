@@ -1,0 +1,34 @@
+meta {
+  name: Bulk Upload Questions
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/admin/questions/bulk
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:json {
+  {
+    "questions": [
+      {
+        "gift_category": "Teaching",
+        "question_text": "Question 1 text here"
+      },
+      {
+        "gift_category": "Exhorting",
+        "question_text": "Question 2 text here"
+      },
+      {
+        "gift_category": "Evangelism",
+        "question_text": "Question 3 text here"
+      }
+    ]
+  }
+}

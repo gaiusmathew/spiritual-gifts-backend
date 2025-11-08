@@ -1,11 +1,11 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const { db } = require('../database/init');
+const { sql } = require('../database/init');
 
 const router = express.Router();
 
 // Signup endpoint
-router.post('/signup', (req, res) => {
+router.post('/signup', async (req, res) => {
   const { fullname, email } = req.body;
 
   if (!fullname || !email) {
@@ -18,59 +18,56 @@ router.post('/signup', (req, res) => {
     return res.status(400).json({ error: 'Invalid email format' });
   }
 
-  // Check if user already exists
-  db.get('SELECT * FROM users WHERE email = ?', [email], (err, row) => {
-    if (err) {
-      return res.status(500).json({ error: 'Database error' });
-    }
+  try {
+    // Check if user already exists
+    const existingUser = await sql`SELECT * FROM users WHERE email = ${email}`;
 
-    if (row) {
+    if (existingUser.length > 0) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
     // Create new user
-    db.run(
-      'INSERT INTO users (fullname, email, role) VALUES (?, ?, ?)',
-      [fullname, email, 'user'],
-      function (err) {
-        if (err) {
-          return res.status(500).json({ error: 'Failed to create user' });
-        }
+    const result = await sql`
+      INSERT INTO users (fullname, email, role)
+      VALUES (${fullname}, ${email}, 'user')
+      RETURNING id
+    `;
 
-        const userId = this.lastID;
-        const token = jwt.sign(
-          { id: userId, email, fullname, role: 'user' },
-          process.env.JWT_SECRET,
-          { expiresIn: '7d' }
-        );
-
-        res.status(201).json({
-          message: 'User created successfully',
-          token,
-          user: { id: userId, fullname, email, role: 'user' }
-        });
-      }
+    const userId = result[0].id;
+    const token = jwt.sign(
+      { id: userId, email, fullname, role: 'user' },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
     );
-  });
+
+    res.status(201).json({
+      message: 'User created successfully',
+      token,
+      user: { id: userId, fullname, email, role: 'user' }
+    });
+  } catch (err) {
+    console.error('Signup error:', err);
+    res.status(500).json({ error: 'Failed to create user' });
+  }
 });
 
 // Login endpoint
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
     return res.status(400).json({ error: 'Email is required' });
   }
 
-  // Find user by email
-  db.get('SELECT * FROM users WHERE email = ?', [email], (err, user) => {
-    if (err) {
-      return res.status(500).json({ error: 'Database error' });
-    }
+  try {
+    // Find user by email
+    const result = await sql`SELECT * FROM users WHERE email = ${email}`;
 
-    if (!user) {
+    if (result.length === 0) {
       return res.status(404).json({ error: 'No user found, please Sign up' });
     }
+
+    const user = result[0];
 
     // Generate JWT token
     const token = jwt.sign(
@@ -89,8 +86,10 @@ router.post('/login', (req, res) => {
         role: user.role
       }
     });
-  });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
 });
 
 module.exports = router;
-

@@ -1,6 +1,6 @@
 # Spiritual Gifts Quiz - Backend API
 
-Backend API for the Spiritual Gifts Discovery Tool built with Express.js and SQLite.
+Backend API for the Spiritual Gifts Discovery Tool built with Express.js and PostgreSQL (Supabase).
 
 ## Features
 
@@ -14,6 +14,7 @@ Backend API for the Spiritual Gifts Discovery Tool built with Express.js and SQL
 
 - Node.js (v14 or higher)
 - npm or yarn
+- Supabase account (free tier works great!)
 
 ## Installation
 
@@ -22,17 +23,15 @@ Backend API for the Spiritual Gifts Discovery Tool built with Express.js and SQL
 npm install
 ```
 
-2. Create a `.env` file in the backend directory:
-```bash
-cp .env.example .env
-```
-
-3. Update the `.env` file with your configuration:
-```
-PORT=5000
+2. Create a `.env` file in the backend directory with your Supabase credentials:
+```env
+DATABASE_URL=postgresql://postgres:your-password@db.your-ref.supabase.co:5432/postgres
 JWT_SECRET=your_secret_key_here
 NODE_ENV=development
+PORT=5000
 ```
+
+**📖 For detailed setup instructions, see [SUPABASE-SETUP.md](./SUPABASE-SETUP.md)**
 
 ## Running the Server
 
@@ -69,11 +68,16 @@ The server will run on `http://localhost:5000`
 
 ## Database Schema
 
+The application uses PostgreSQL (hosted on Supabase) with the following tables:
+
 ### Tables
-- **users** - User accounts
-- **questions** - Quiz questions
+- **users** - User accounts (SERIAL id, email, fullname, role, created_at)
+- **questions** - Quiz questions (30 questions, shuffled order)
+- **gift_descriptions** - Spiritual gift descriptions
 - **quiz_responses** - Quiz submission records
 - **response_details** - Individual question responses
+
+Tables are automatically created when the server starts. See [SUPABASE-SETUP.md](./SUPABASE-SETUP.md) for detailed schema.
 
 ## Spiritual Gift Categories
 
@@ -117,19 +121,31 @@ curl -X POST http://localhost:5000/api/admin/create-admin \
 
 ### Method 2: Manual Database Update
 
-Alternatively, manually update the database:
+Alternatively, update via Supabase SQL Editor:
 
-```bash
-# Access the SQLite database
-sqlite3 database/spiritual-gifts.db
-
-# Update a user to admin
+1. Go to your Supabase Dashboard → SQL Editor
+2. Run this query:
+```sql
 UPDATE users SET role = 'admin' WHERE email = 'user@example.com';
 ```
 
 ## Development
 
-The database will be automatically created and seeded with questions on first run.
+The database will be automatically initialized and seeded on first run:
+- All tables created
+- 30 quiz questions seeded (shuffled order)
+- 6 gift descriptions seeded
+- Default admin user created
+
+## Migration from SQLite
+
+This backend was recently migrated from SQLite to PostgreSQL. See the [migration guide](../SUPABASE-MIGRATION.md) for details.
+
+## Documentation
+
+- [SUPABASE-SETUP.md](./SUPABASE-SETUP.md) - Complete Supabase setup guide
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - Deployment instructions
+- [bruno-collection/](./bruno-collection/) - API testing collection
 
 ## License
 

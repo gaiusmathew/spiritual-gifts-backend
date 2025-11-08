@@ -1,0 +1,23 @@
+meta {
+  name: Create Question
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/admin/questions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:json {
+  {
+    "gift_category": "Teaching",
+    "question_text": "Do you enjoy researching and preparing detailed Bible studies?",
+    "question_order": 31
+  }
+}

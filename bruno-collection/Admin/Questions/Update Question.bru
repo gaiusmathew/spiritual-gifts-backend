@@ -1,0 +1,23 @@
+meta {
+  name: Update Question
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base_url}}/admin/questions/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:json {
+  {
+    "gift_category": "Teaching",
+    "question_text": "Updated question text here",
+    "question_order": 1
+  }
+}

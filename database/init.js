@@ -1,94 +1,81 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const postgres = require('postgres');
 
-const dbPath = path.join(__dirname, 'spiritual-gifts.db');
-const db = new sqlite3.Database(dbPath);
+// Create PostgreSQL connection using Supabase pooler
+// Support both DATABASE_URL and POSTGRES_URL
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
-const initializeDatabase = () => {
-  return new Promise((resolve, reject) => {
-    db.serialize(() => {
-      // Users table
-      db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          fullname TEXT NOT NULL,
-          email TEXT UNIQUE NOT NULL,
-          role TEXT DEFAULT 'user',
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `, (err) => {
-        if (err) {
-          console.error('Error creating users table:', err);
-          reject(err);
-        }
-      });
+const sql = postgres(connectionString, {
+  ssl: 'require'
+});
 
-      // Questions table
-      db.run(`
-        CREATE TABLE IF NOT EXISTS questions (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          gift_category TEXT NOT NULL,
-          question_text TEXT NOT NULL,
-          question_order INTEGER NOT NULL
-        )
-      `, (err) => {
-        if (err) {
-          console.error('Error creating questions table:', err);
-          reject(err);
-        }
-      });
+// Test connection
+console.log('Connecting to PostgreSQL database...');
 
-      // Spiritual gifts descriptions table
-      db.run(`
-        CREATE TABLE IF NOT EXISTS gift_descriptions (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          gift_category TEXT UNIQUE NOT NULL,
-          description TEXT NOT NULL
-        )
-      `, (err) => {
-        if (err) {
-          console.error('Error creating gift_descriptions table:', err);
-          reject(err);
-        }
-      });
+const initializeDatabase = async () => {
+  try {
+    // Users table
+    await sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        fullname TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        role TEXT DEFAULT 'user',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    console.log('Users table created/verified');
 
-      // Quiz responses table
-      db.run(`
-        CREATE TABLE IF NOT EXISTS quiz_responses (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-      `, (err) => {
-        if (err) {
-          console.error('Error creating quiz_responses table:', err);
-          reject(err);
-        }
-      });
+    // Questions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS questions (
+        id SERIAL PRIMARY KEY,
+        gift_category TEXT NOT NULL,
+        question_text TEXT NOT NULL,
+        question_order INTEGER NOT NULL
+      )
+    `;
+    console.log('Questions table created/verified');
 
-      // Response details table
-      db.run(`
-        CREATE TABLE IF NOT EXISTS response_details (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          response_id INTEGER NOT NULL,
-          question_id INTEGER NOT NULL,
-          answer_value INTEGER NOT NULL,
-          FOREIGN KEY (response_id) REFERENCES quiz_responses(id),
-          FOREIGN KEY (question_id) REFERENCES questions(id)
-        )
-      `, (err) => {
-        if (err) {
-          console.error('Error creating response_details table:', err);
-          reject(err);
-        } else {
-          console.log('Database initialized successfully');
-          resolve();
-        }
-      });
-    });
-  });
+    // Spiritual gifts descriptions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS gift_descriptions (
+        id SERIAL PRIMARY KEY,
+        gift_category TEXT UNIQUE NOT NULL,
+        description TEXT NOT NULL
+      )
+    `;
+    console.log('Gift descriptions table created/verified');
+
+    // Quiz responses table
+    await sql`
+      CREATE TABLE IF NOT EXISTS quiz_responses (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `;
+    console.log('Quiz responses table created/verified');
+
+    // Response details table
+    await sql`
+      CREATE TABLE IF NOT EXISTS response_details (
+        id SERIAL PRIMARY KEY,
+        response_id INTEGER NOT NULL,
+        question_id INTEGER NOT NULL,
+        answer_value INTEGER NOT NULL,
+        FOREIGN KEY (response_id) REFERENCES quiz_responses(id),
+        FOREIGN KEY (question_id) REFERENCES questions(id)
+      )
+    `;
+    console.log('Response details table created/verified');
+
+    console.log('✅ Database initialized successfully');
+    console.log('✅ Connected to PostgreSQL database');
+  } catch (err) {
+    console.error('❌ Error initializing database:', err);
+    throw err;
+  }
 };
 
-module.exports = { db, initializeDatabase };
-
+module.exports = { sql, initializeDatabase };

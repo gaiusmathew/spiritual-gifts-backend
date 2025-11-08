@@ -1,0 +1,20 @@
+meta {
+  name: Get All Questions
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/admin/questions
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~category: Teaching
+  ~search: Bible
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
