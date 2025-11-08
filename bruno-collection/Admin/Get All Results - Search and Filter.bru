@@ -1,0 +1,31 @@
+meta {
+  name: Get All Results - Search and Filter
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/admin/results?search=john&giftFilter=Mercy
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+params:query {
+  search: john
+  giftFilter: Mercy
+}
+
+docs {
+  # Get All Results - Search and Filter (Admin Only)
+  
+  Combine search and gift filter.
+  
+  Query Parameters:
+  - search: Search term (matches fullname or email)
+  - giftFilter: Gift category name
+}
+

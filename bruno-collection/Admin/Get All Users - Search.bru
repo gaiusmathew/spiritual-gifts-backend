@@ -1,0 +1,33 @@
+meta {
+  name: Get All Users - Search
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{base_url}}/admin/users?search=john
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+params:query {
+  search: john
+}
+
+docs {
+  # Get All Users - Search (Admin Only)
+  
+  Search users by name or email.
+  
+  Query Parameters:
+  - search: Search term (matches fullname or email)
+  
+  Example:
+  - /admin/users?search=john
+  - /admin/users?search=example.com
+}
+

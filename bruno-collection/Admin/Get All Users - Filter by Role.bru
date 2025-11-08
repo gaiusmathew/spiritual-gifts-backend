@@ -1,0 +1,35 @@
+meta {
+  name: Get All Users - Filter by Role
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{base_url}}/admin/users?role=user
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+params:query {
+  role: user
+}
+
+docs {
+  # Get All Users - Filter by Role (Admin Only)
+  
+  Filter users by their role.
+  
+  Query Parameters:
+  - role: Filter by role type
+    - "user" - Get only regular users
+    - "admin" - Get only admin users
+  
+  Example URLs:
+  - /admin/users?role=user
+  - /admin/users?role=admin
+}
+

@@ -1,0 +1,28 @@
+meta {
+  name: Get Gift Descriptions
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{base_url}}/admin/gift-descriptions
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Get Gift Descriptions (Admin Only)
+  
+  Returns detailed descriptions for all spiritual gift categories.
+  
+  Response includes:
+  - gift_category: Name of the spiritual gift
+  - description: Full Spirit-given ability description
+  
+  These descriptions are stored in the database and displayed in assessment results.
+}
+

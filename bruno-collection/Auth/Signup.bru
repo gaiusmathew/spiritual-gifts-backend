@@ -1,0 +1,24 @@
+meta {
+  name: Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fullname": "Gaius",
+    "email": "john.doe@example.com"
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setEnvVar("token", res.body.token);
+  }
+}

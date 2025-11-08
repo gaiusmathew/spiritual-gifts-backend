@@ -1,0 +1,37 @@
+meta {
+  name: Login as Default Admin
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@spiritualgifts.com"
+  }
+}
+
+docs {
+  # Login as Default Admin
+  
+  Use this to login with the default admin account that's automatically created when the server starts.
+  
+  **Default Admin Credentials:**
+  - Email: admin@spiritualgifts.com
+  - Name: Admin User
+  - Role: admin
+  
+  This admin user is created automatically on server startup if no admin exists.
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setEnvVar("token", res.body.token);
+  }
+}
+

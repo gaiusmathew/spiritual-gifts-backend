@@ -1,0 +1,27 @@
+meta {
+  name: Get All Users
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{base_url}}/admin/users
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Get All Users (Admin Only)
+  
+  Get a list of all users in the system with their details.
+  
+  Returns for each user:
+  - id, fullname, email, role
+  - created_at timestamp
+  - quiz_count (number of quizzes taken)
+}
+

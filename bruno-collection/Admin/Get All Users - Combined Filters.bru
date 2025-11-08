@@ -1,0 +1,35 @@
+meta {
+  name: Get All Users - Combined Filters
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{base_url}}/admin/users?role=user&search=john
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+params:query {
+  role: user
+  search: john
+}
+
+docs {
+  # Get All Users - Combined Filters (Admin Only)
+  
+  Combine role filter and search.
+  
+  Query Parameters:
+  - role: Filter by role (user or admin)
+  - search: Search term (matches fullname or email)
+  
+  Example:
+  - /admin/users?role=user&search=john
+  - /admin/users?role=admin&search=admin@
+}
+

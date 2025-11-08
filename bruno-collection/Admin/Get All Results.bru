@@ -1,0 +1,23 @@
+meta {
+  name: Get All Results
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/admin/results
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Get All Results (Admin Only)
+  
+  Returns all user quiz results.
+  Requires admin role in JWT token.
+}
+

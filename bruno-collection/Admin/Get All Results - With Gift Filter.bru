@@ -1,0 +1,38 @@
+meta {
+  name: Get All Results - With Gift Filter
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/admin/results?giftFilter=Teaching
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+params:query {
+  giftFilter: Teaching
+}
+
+docs {
+  # Get All Results - With Gift Filter (Admin Only)
+  
+  Filter users by spiritual gift category.
+  Only returns users with that gift scoring 60% or higher.
+  
+  Query Parameters:
+  - giftFilter: Gift category name
+  
+  Valid gift categories:
+  - Teaching
+  - Exhorting
+  - Prophesying
+  - Word of Wisdom
+  - Word of Knowledge
+  - Evangelism
+}
+

@@ -1,0 +1,23 @@
+meta {
+  name: Get Gift Categories
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url}}/admin/gift-categories
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Get Gift Categories (Admin Only)
+  
+  Returns list of all spiritual gift categories in the system.
+  Useful for populating filter dropdowns.
+}
+

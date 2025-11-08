@@ -1,0 +1,32 @@
+meta {
+  name: Get User Response Details
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/admin/user/1/response/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Get User Response Details (Admin Only)
+  
+  View detailed user quiz responses.
+  
+  URL Parameters:
+  - userId: User ID
+  - responseId: Quiz response ID
+  
+  Returns:
+  - User information
+  - Complete quiz responses
+  - All spiritual gifts with scores
+  - Individual question answers
+}
+

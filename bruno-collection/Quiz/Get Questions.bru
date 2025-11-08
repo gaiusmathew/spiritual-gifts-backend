@@ -1,0 +1,16 @@
+meta {
+  name: Get Questions
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/quiz/questions
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+

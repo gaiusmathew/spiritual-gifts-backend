@@ -1,0 +1,37 @@
+meta {
+  name: Create Admin User
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{base_url}}/admin/create-admin
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "fullname": "Gaius",
+    "email": "gaius@yopmail.com"
+  }
+}
+
+docs {
+  # Create Admin User (Admin Only)
+  
+  Create a new user with admin role directly via API.
+  No need to manually update the database!
+  
+  **Important**: You must be logged in as an admin to use this endpoint.
+  
+  Body Parameters:
+  - fullname: Full name of the admin user
+  - email: Email address (must be unique)
+  
+  The user is created with 'admin' role automatically.
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Create Admin User
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fullname": "Admin User",
+    "email": "admin@example.com"
+  }
+}
+
+docs {
+  # Create Admin User
+  
+  After creating this user, you need to manually update the database to set the role as 'admin':
+  
+  ```bash
+  cd backend
+  sqlite3 database/spiritual-gifts.db
+  UPDATE users SET role = 'admin' WHERE email = 'admin@example.com';
+  .exit
+  ```
+  
+  Then login again with this email to get admin access.
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setEnvVar("token", res.body.token);
+  }
+}
+

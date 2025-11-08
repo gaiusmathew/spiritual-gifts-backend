@@ -1,0 +1,27 @@
+meta {
+  name: Get Quiz Result
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/quiz/result/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Get Quiz Result
+  
+  Replace '1' in the URL with the actual response ID from quiz history.
+  
+  Returns:
+  - Complete gift assessment
+  - All responses
+  - Scores and percentages
+}
+

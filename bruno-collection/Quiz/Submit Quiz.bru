@@ -1,0 +1,71 @@
+meta {
+  name: Submit Quiz
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/quiz/submit
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "responses": [
+      { "question_id": 1, "answer_value": 5 },
+      { "question_id": 2, "answer_value": 4 },
+      { "question_id": 3, "answer_value": 5 },
+      { "question_id": 4, "answer_value": 4 },
+      { "question_id": 5, "answer_value": 5 },
+      { "question_id": 6, "answer_value": 4 },
+      { "question_id": 7, "answer_value": 5 },
+      { "question_id": 8, "answer_value": 3 },
+      { "question_id": 9, "answer_value": 4 },
+      { "question_id": 10, "answer_value": 5 },
+      { "question_id": 11, "answer_value": 5 },
+      { "question_id": 12, "answer_value": 5 },
+      { "question_id": 13, "answer_value": 4 },
+      { "question_id": 14, "answer_value": 5 },
+      { "question_id": 15, "answer_value": 4 },
+      { "question_id": 16, "answer_value": 3 },
+      { "question_id": 17, "answer_value": 4 },
+      { "question_id": 18, "answer_value": 3 },
+      { "question_id": 19, "answer_value": 4 },
+      { "question_id": 20, "answer_value": 3 },
+      { "question_id": 21, "answer_value": 5 },
+      { "question_id": 22, "answer_value": 5 },
+      { "question_id": 23, "answer_value": 4 },
+      { "question_id": 24, "answer_value": 5 },
+      { "question_id": 25, "answer_value": 5 },
+      { "question_id": 26, "answer_value": 3 },
+      { "question_id": 27, "answer_value": 3 },
+      { "question_id": 28, "answer_value": 2 },
+      { "question_id": 29, "answer_value": 3 },
+      { "question_id": 30, "answer_value": 2 }
+    ]
+  }
+}
+
+docs {
+  # Submit Quiz
+  
+  Submit all 30 quiz responses at once. Each response includes:
+  - question_id: ID of the question (1-30)
+  - answer_value: User's answer (1-5 scale)
+  
+  Scale:
+  - 5: Very true of me
+  - 4: Mostly true of me
+  - 3: Sometimes true of me
+  - 2: Rarely true of me
+  - 1: Not true of me
+  
+  Note: This example includes all 30 questions with sample answers.
+  Questions are shuffled so they don't appear grouped by spiritual gift category.
+}
+
