@@ -1,10 +1,7 @@
-const { sql } = require('./init');
+// Quick script to verify seed.js has 70 questions
+const { sql } = require('./database/init');
 
-// NOTE: seedQuestions function is NO LONGER auto-called on server startup
-// Questions should be added manually via bulk upload in the admin panel
-// This function is kept for reference/manual use only
-
-// All 70 questions from spiritual-gifts-teaching-gifts.md and spiritual-gifts-serving-gifts.md
+// Inline questions array from seed.js to avoid import issues
 const questions = [
   // TEACHING GIFTS (30 questions)
   
@@ -109,161 +106,27 @@ const questions = [
   { gift_category: 'Hospitality', question_text: 'I take the initiative to invite people to my home who are new to the church.' }
 ];
 
-// Shuffle array using Fisher-Yates algorithm
-const shuffleArray = (array) => {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-};
+// Count by category
+const categoryCounts = {};
+questions.forEach(q => {
+  categoryCounts[q.gift_category] = (categoryCounts[q.gift_category] || 0) + 1;
+});
 
-// Shuffle questions and assign order
-const shuffledQuestions = shuffleArray(questions).map((q, index) => ({
-  ...q,
-  question_order: index + 1
-}));
+console.log('\n=== SEED.JS QUESTIONS VERIFICATION ===\n');
+console.log(`Total Questions: ${questions.length}`);
+console.log('\nQuestions by Category:\n');
 
-const seedQuestions = async () => {
-  try {
-    // Check if questions already exist
-    const result = await sql`SELECT COUNT(*) as count FROM questions`;
-    const count = parseInt(result[0].count);
+Object.keys(categoryCounts).sort().forEach(cat => {
+  console.log(`${cat.padEnd(20)} : ${categoryCounts[cat]} questions`);
+});
 
-    if (count > 0) {
-      console.log('Questions already seeded');
-      return;
-    }
+console.log(`\nTotal Categories: ${Object.keys(categoryCounts).length}`);
 
-    // Insert questions
-    for (const q of shuffledQuestions) {
-      await sql`
-        INSERT INTO questions (gift_category, question_text, question_order)
-        VALUES (${q.gift_category}, ${q.question_text}, ${q.question_order})
-      `;
-    }
+if (questions.length === 70) {
+  console.log('\n✅ SUCCESS: seed.js has exactly 70 questions!\n');
+  process.exit(0);
+} else {
+  console.log(`\n❌ ERROR: Expected 70 questions, but found ${questions.length}\n`);
+  process.exit(1);
+}
 
-    console.log('✅ Questions seeded successfully');
-  } catch (err) {
-    console.error('Error seeding questions:', err);
-    throw err;
-  }
-};
-
-const giftDescriptions = [
-  {
-    gift_category: 'Teaching',
-    description: 'The Spirit-given ability to deeply study, accurately interpret, clearly explain, and faithfully apply God\'s Word so that others grow toward spiritual maturity in Christ.'
-  },
-  {
-    gift_category: 'Exhorting',
-    description: 'The Spirit-given ability to encourage, comfort, and urge others toward obedience, faithfulness, and spiritual growth through words of counsel, comfort, or challenge.'
-  },
-  {
-    gift_category: 'Prophesying',
-    description: 'The Spirit-enabled ability to boldly proclaim God\'s written Word with passion, clarity and conviction, exposing sin, calling for repentance, and building up the church in holiness.'
-  },
-  {
-    gift_category: 'Word of Knowledge',
-    description: 'The Spirit-given ability to deeply understand, analyze, and articulate biblical truths and doctrinal insights with intellectual clarity and precision.'
-  },
-  {
-    gift_category: 'Word of Wisdom',
-    description: 'The Spirit-given ability to apply biblical truths and spiritual principles wisely to life situations, guiding others in godly and practical decision-making.'
-  },
-  {
-    gift_category: 'Evangelism',
-    description: 'The Spirit-given ability to effectively share the gospel with unbelievers and lead them to faith in Jesus Christ with clarity and conviction.'
-  },
-  {
-    gift_category: 'Service',
-    description: 'The Spirit-given ability to identify and meet practical needs in the church through hands-on work, often behind the scenes, to support ministry and bless others.'
-  },
-  {
-    gift_category: 'Help',
-    description: 'The Spirit-given ability to come alongside others in their time of need, providing personal assistance, care, and support to alleviate burdens and bring comfort.'
-  },
-  {
-    gift_category: 'Leadership',
-    description: 'The Spirit-given ability to cast vision, provide direction, and motivate others toward God\'s purposes, guiding the church with wisdom and spiritual insight.'
-  },
-  {
-    gift_category: 'Administration',
-    description: 'The Spirit-given ability to organize, coordinate, and manage details, resources, and people effectively to accomplish ministry goals and maintain order in the church.'
-  },
-  {
-    gift_category: 'Giving',
-    description: 'The Spirit-given ability to contribute material resources generously and joyfully to support God\'s work, often making personal sacrifices to meet the needs of others and advance the gospel.'
-  },
-  {
-    gift_category: 'Mercy',
-    description: 'The Spirit-given ability to show compassion and kindness to those who are suffering, hurting, or in distress, bringing comfort and demonstrating God\'s love through acts of care.'
-  },
-  {
-    gift_category: 'Faith',
-    description: 'The Spirit-given ability to trust God with extraordinary confidence, to see His purposes accomplished, and to move forward boldly even when circumstances seem impossible.'
-  },
-  {
-    gift_category: 'Hospitality',
-    description: 'The Spirit-given ability to warmly welcome and care for people, creating an environment where others feel valued, comfortable, and at home, reflecting God\'s love through generous hosting.'
-  }
-];
-
-const seedGiftDescriptions = async () => {
-  try {
-    // Check if descriptions already exist
-    const result = await sql`SELECT COUNT(*) as count FROM gift_descriptions`;
-    const count = parseInt(result[0].count);
-
-    if (count > 0) {
-      console.log('Gift descriptions already seeded');
-      return;
-    }
-
-    // Insert descriptions
-    for (const gift of giftDescriptions) {
-      await sql`
-        INSERT INTO gift_descriptions (gift_category, description)
-        VALUES (${gift.gift_category}, ${gift.description})
-      `;
-    }
-
-    console.log('✅ Gift descriptions seeded successfully');
-  } catch (err) {
-    console.error('Error seeding gift descriptions:', err);
-    throw err;
-  }
-};
-
-const seedDefaultAdmin = async () => {
-  try {
-    // Check if any admin user exists
-    const result = await sql`SELECT * FROM users WHERE role = ${'admin'}`;
-
-    if (result.length > 0) {
-      console.log('Admin user already exists');
-      return;
-    }
-
-    // Create default admin user
-    const defaultAdmin = {
-      fullname: 'Admin User',
-      email: 'admin@spiritualgifts.com',
-      role: 'admin'
-    };
-
-    await sql`
-      INSERT INTO users (fullname, email, role)
-      VALUES (${defaultAdmin.fullname}, ${defaultAdmin.email}, ${defaultAdmin.role})
-    `;
-
-    console.log(`✅ Default admin user created: ${defaultAdmin.email}`);
-    console.log('You can now login with this email to get admin access');
-  } catch (err) {
-    console.error('Error seeding default admin:', err);
-    throw err;
-  }
-};
-
-module.exports = { seedQuestions, seedGiftDescriptions, seedDefaultAdmin };

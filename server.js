@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { initializeDatabase } = require('./database/init');
-const { seedQuestions, seedGiftDescriptions, seedDefaultAdmin } = require('./database/seed');
+const { seedGiftDescriptions, seedDefaultAdmin } = require('./database/seed');
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -22,7 +22,7 @@ const ensureDbInitialized = async () => {
   if (!dbInitialized) {
     try {
       await initializeDatabase();
-      await seedQuestions();
+      // await seedQuestions(); // REMOVED: Questions should be added manually via bulk upload
       await seedGiftDescriptions();
       await seedDefaultAdmin();
       dbInitialized = true;

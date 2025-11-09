@@ -206,6 +206,53 @@ router.get('/user/:userId/response/:responseId', async (req, res) => {
   }
 });
 
+// Delete a user and all their data
+router.delete('/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Check if user exists
+    const user = await sql`SELECT * FROM users WHERE id = ${userId}`;
+    if (user.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Prevent deleting admin users
+    if (user[0].role === 'admin') {
+      return res.status(403).json({ error: 'Cannot delete admin users' });
+    }
+
+    // Get all quiz responses for this user
+    const responses = await sql`SELECT id FROM quiz_responses WHERE user_id = ${userId}`;
+    const responseIds = responses.map(r => r.id);
+
+    // Delete in correct order to respect foreign key constraints
+    if (responseIds.length > 0) {
+      // 1. Delete all response details for this user's quiz responses
+      await sql`DELETE FROM response_details WHERE response_id = ANY(${responseIds})`;
+      
+      // 2. Delete all quiz responses for this user
+      await sql`DELETE FROM quiz_responses WHERE user_id = ${userId}`;
+    }
+
+    // 3. Delete the user
+    await sql`DELETE FROM users WHERE id = ${userId}`;
+
+    res.json({ 
+      success: true, 
+      message: 'User and all associated data deleted successfully',
+      deletedUser: {
+        id: user[0].id,
+        fullname: user[0].fullname,
+        email: user[0].email
+      }
+    });
+  } catch (err) {
+    console.error('Delete user error:', err);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
 // Get all gift categories
 router.get('/gift-categories', async (req, res) => {
   try {
