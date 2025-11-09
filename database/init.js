@@ -51,11 +51,24 @@ const initializeDatabase = async () => {
       CREATE TABLE IF NOT EXISTS quiz_responses (
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL,
+        comments TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `;
     console.log('Quiz responses table created/verified');
+    
+    // Add comments column if it doesn't exist (for existing databases)
+    try {
+      await sql`
+        ALTER TABLE quiz_responses 
+        ADD COLUMN IF NOT EXISTS comments TEXT
+      `;
+      console.log('Comments column added/verified');
+    } catch (err) {
+      // Column might already exist, that's fine
+      console.log('Comments column already exists or error:', err.message);
+    }
 
     // Response details table
     await sql`

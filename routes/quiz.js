@@ -78,7 +78,7 @@ const calculateGifts = async (responses) => {
 
 // Submit quiz responses
 router.post('/submit', authenticateToken, async (req, res) => {
-  const { responses } = req.body;
+  const { responses, comments } = req.body;
   const userId = req.user.id;
 
   if (!responses || !Array.isArray(responses) || responses.length === 0) {
@@ -88,10 +88,10 @@ router.post('/submit', authenticateToken, async (req, res) => {
   try {
     // Use transaction
     await sql.begin(async sql => {
-      // Create quiz response record
+      // Create quiz response record with optional comments
       const responseResult = await sql`
-        INSERT INTO quiz_responses (user_id)
-        VALUES (${userId})
+        INSERT INTO quiz_responses (user_id, comments)
+        VALUES (${userId}, ${comments || null})
         RETURNING id
       `;
 
@@ -183,6 +183,7 @@ router.get('/result/:responseId', authenticateToken, async (req, res) => {
       responseId,
       userId: quizResponse.user_id,
       createdAt: quizResponse.created_at,
+      comments: quizResponse.comments,
       gifts,
       responses: rows
     });
