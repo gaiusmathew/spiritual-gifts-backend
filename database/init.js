@@ -5,7 +5,12 @@ const postgres = require('postgres');
 const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
 const sql = postgres(connectionString, {
-  ssl: 'require'
+  ssl: 'require',
+  max: 10, // Maximum number of connections in pool
+  idle_timeout: 20, // Close idle connections after 20 seconds
+  connect_timeout: 10, // Connection timeout
+  max_lifetime: 60 * 30, // Max connection lifetime (30 minutes)
+  prepare: false // Disable prepared statements to avoid caching issues
 });
 
 // Test connection

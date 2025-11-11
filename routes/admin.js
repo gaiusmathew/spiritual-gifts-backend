@@ -56,16 +56,33 @@ const calculateGifts = async (responses) => {
   return enrichedGifts;
 };
 
-// Get all user results with search and filter
+// Get all user results with search, filter, and pagination
 router.get('/results', async (req, res) => {
-  const { search, giftFilter } = req.query;
+  const { search, giftFilter, page = 1, limit = 10 } = req.query;
 
   try {
+    // Parse pagination parameters
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit))); // Max 50 per page
+    const offset = (pageNum - 1) * limitNum;
+
     let results;
+    let totalCount;
     
     if (search) {
       // Search with ILIKE (case-insensitive)
       const searchTerm = `%${search}%`;
+      
+      // Get total count for pagination
+      const countResult = await sql`
+        SELECT COUNT(DISTINCT qr.id) as total
+        FROM users u
+        INNER JOIN quiz_responses qr ON u.id = qr.user_id
+        WHERE u.fullname ILIKE ${searchTerm} OR u.email ILIKE ${searchTerm}
+      `;
+      totalCount = parseInt(countResult[0].total);
+      
+      // Get paginated results
       results = await sql`
         SELECT DISTINCT
           u.id as user_id,
@@ -77,8 +94,19 @@ router.get('/results', async (req, res) => {
         INNER JOIN quiz_responses qr ON u.id = qr.user_id
         WHERE u.fullname ILIKE ${searchTerm} OR u.email ILIKE ${searchTerm}
         ORDER BY qr.created_at DESC
+        LIMIT ${limitNum}
+        OFFSET ${offset}
       `;
     } else {
+      // Get total count for pagination
+      const countResult = await sql`
+        SELECT COUNT(DISTINCT qr.id) as total
+        FROM users u
+        INNER JOIN quiz_responses qr ON u.id = qr.user_id
+      `;
+      totalCount = parseInt(countResult[0].total);
+      
+      // Get paginated results
       results = await sql`
         SELECT DISTINCT
           u.id as user_id,
@@ -89,6 +117,8 @@ router.get('/results', async (req, res) => {
         FROM users u
         INNER JOIN quiz_responses qr ON u.id = qr.user_id
         ORDER BY qr.created_at DESC
+        LIMIT ${limitNum}
+        OFFSET ${offset}
       `;
     }
 
@@ -112,7 +142,20 @@ router.get('/results', async (req, res) => {
         })
       );
 
-      res.json({ results: enrichedResults });
+      // Calculate pagination metadata
+      const totalPages = Math.ceil(totalCount / limitNum);
+      
+      res.json({ 
+        results: enrichedResults,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total: totalCount,
+          totalPages,
+          hasNextPage: pageNum < totalPages,
+          hasPrevPage: pageNum > 1
+        }
+      });
     } else {
       // Filter by specific gift
       const enrichedResults = await Promise.all(
@@ -142,7 +185,21 @@ router.get('/results', async (req, res) => {
       );
 
       const filtered = enrichedResults.filter(r => r !== null);
-      res.json({ results: filtered });
+      
+      // Calculate pagination metadata
+      const totalPages = Math.ceil(totalCount / limitNum);
+      
+      res.json({ 
+        results: filtered,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total: totalCount,
+          totalPages,
+          hasNextPage: pageNum < totalPages,
+          hasPrevPage: pageNum > 1
+        }
+      });
     }
   } catch (err) {
     console.error('Get results error:', err);
