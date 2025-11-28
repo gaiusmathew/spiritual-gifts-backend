@@ -137,7 +137,7 @@ router.get('/results', async (req, res) => {
 
           return {
             ...result,
-            topGifts: gifts.slice(0, 3)
+            topGifts: gifts.slice(0, 5)
           };
         })
       );
